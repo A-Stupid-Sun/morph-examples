@@ -15,3 +15,6 @@ node_modules
 
 /hardhat-demo/yarn.lock
 .DS_Store
+yarn.lock
+package-lock.json
+package.json
