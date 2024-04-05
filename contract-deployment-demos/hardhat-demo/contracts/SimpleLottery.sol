@@ -1,9 +1,14 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
+
 contract SimpleLottery {
     address public manager;
     address[] public participants;
     address public winner;
+    uint256 public constant MAX_PARTICIPANTS = 1;
+    uint256 public constant MIN_CONTRIBUTION = 0.00002 ether;
+
+    event WinnerSelected(address winner, uint256 prize);
 
     constructor() {
         manager = msg.sender;
@@ -15,31 +20,34 @@ contract SimpleLottery {
     }
 
     function enter() public payable {
-        require(msg.value >= 20000 gwei, "Contribution must be exactly 0.2 ether");
-        require(participants.length < 1, "Maximum participants reached");
+        require(msg.value >= MIN_CONTRIBUTION, "Contribution must be exactly 0.00002 ether");
+        require(participants.length < MAX_PARTICIPANTS, "Maximum participants reached");
 
         participants.push(msg.sender);
 
-        if (participants.length == 1) {
+        if (participants.length == MAX_PARTICIPANTS) {
             pickWinner();
         }
     }
 
     function pickWinner() internal {
-        require(participants.length == 1, "Not enough participants yet");
+        require(participants.length == MAX_PARTICIPANTS, "Not enough participants yet");
 
         // Select a random winner using an external source of randomness
         uint256 index = getRandomIndex(participants.length);
         winner = participants[index];
 
-        // Transfer 2 ether to the winner
-        payable(winner).transfer(10000 gwei);
-
-        // Transfer 0.5 ether to the owner
-        payable(manager).transfer(10000 gwei);
+        // Transfer prizes
+        uint256 prizeAmount = address(this).balance;
+        uint256 winnerPrize = prizeAmount * 2 / 3;
+        uint256 managerPrize = prizeAmount - winnerPrize;
+        payable(winner).transfer(winnerPrize);
+        payable(manager).transfer(managerPrize);
 
         // Reset participants for the next round
-        participants = new address[](0);
+        delete participants;
+        
+        emit WinnerSelected(winner, winnerPrize);
     }
 
     function getParticipants() public view returns (address[] memory) {
@@ -51,6 +59,6 @@ contract SimpleLottery {
     }
 
     function getRandomIndex(uint256 max) internal view returns (uint256) {
-        return uint256(keccak256(abi.encodePacked(blockhash(block.number - 1), block.timestamp))) % max;
+        return uint256(keccak256(abi.encodePacked(blockhash(block.number - 1), block.timestamp, msg.sender))) % max;
     }
 }

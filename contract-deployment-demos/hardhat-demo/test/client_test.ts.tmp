@@ -2,7 +2,7 @@ import { ethers } from "hardhat";
 
 async function main() {
   // 连接到以太坊网络
-
+    
   // 合约 ABI
   const contractABI = [
     {
