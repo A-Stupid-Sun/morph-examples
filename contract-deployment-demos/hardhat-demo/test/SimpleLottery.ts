@@ -10,8 +10,8 @@ describe("SimpleLottery", function () {
 
   async function deployLotteryFixture() {
     const [manager, participant] = await ethers.getSigners();
-    console.log(manager.address)
-    console.log(.address)
+    //console.log(manager.address)
+    //console.log(.address)
     const SimpleLottery = await ethers.getContractFactory("SimpleLottery");
     const lotteryContract = await SimpleLottery.deploy();
     //await lotteryContract.deployed();
